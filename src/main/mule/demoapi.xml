@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="be145707-5aa9-4614-a7f6-6c8fb7d137da" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="3e0a56ff-5067-4d39-9ecd-862c3c61fe05" >
+		<http:request-connection host="worldtimeapi.org" port="80" />
+	</http:request-config>
+	<flow name="demoapiFlow" doc:id="7d83f51e-ead1-4d30-b963-6fa383e04bad" >
+		<http:listener doc:name="Listener" doc:id="cb7b5327-7436-45d4-94e0-89b178ba5263" config-ref="HTTP_Listener_config" path="/demo"/>
+		<logger level="INFO" doc:name="Logger" doc:id="9da96b53-81a8-45dd-b7db-9adce743b4b6" message="#[payload]"/>
+		<scatter-gather doc:name="Scatter-Gather" doc:id="b6836c15-fd88-46bd-9351-7d694ea6b59e" >
+			<route >
+				<http:request method="GET" doc:name="Request" doc:id="2a4d6efb-28db-426b-b8df-a6ff749a2974" config-ref="HTTP_Request_configuration" path="/timezone/America/New_York"/>
+				<set-payload value="#[payload]" doc:name="Set Payload" doc:id="eaad8549-9efa-4eb6-b7fa-3fd336433695" />
+				<ee:transform doc:name="Transform Message" doc:id="14b307e6-0e79-4d0f-bae5-1c1422ef920c" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</route>
+			<route >
+				<set-payload value="#[payload]" doc:name="Set Payload" doc:id="e5b71d65-76a5-4ee6-8511-f42cb91b60f2" />
+				<ee:transform doc:name="Transform Message" doc:id="6dc6d574-52d7-47f1-bfeb-b64ab31a5a11" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+"Hello"]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</route>
+		</scatter-gather>
+		<ee:transform doc:name="Transform Message" doc:id="289a4cef-558d-4c7d-8bbc-36b55d8f90ad" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
